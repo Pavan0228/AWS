@@ -5,12 +5,11 @@ import pLimit from "p-limit";
 
 const s3 = new AWS.S3();
 const rekognition = new AWS.Rekognition();
-const limit = pLimit(3); 
+const limit = pLimit(3);
 
 const saveFiles = async (file) => {
-
     const resizedImage = await sharp(file.content)
-        .resize({ width: 800 }) 
+        .resize({ width: 800 })
         .toBuffer();
 
     const s3Params = {
@@ -21,22 +20,29 @@ const saveFiles = async (file) => {
     };
 
     const uploadPromise = s3.putObject(s3Params).promise();
-    const labelsPromise = rekognition.detectLabels({
-        Image: { Bytes: resizedImage }
-    }).promise();
+    const labelsPromise = rekognition
+        .detectLabels({
+            Image: { Bytes: resizedImage },
+        })
+        .promise();
 
-    const [saveFile, labels] = await Promise.all([uploadPromise, labelsPromise]);
+    const [saveFile, { Labels }] = await Promise.all([
+        uploadPromise,
+        labelsPromise,
+    ]);
 
-    console.log(saveFile, "saveFile");
-    console.log(labels, "labels");
-
-    return { saveFile, labels };
+    return {
+        saveFile: `https://${process.env.BUCKET_NAME}.s3.amazonaws.com/${file.filename}`,
+        labels: Labels.map((label) => label.Name),
+    };
 };
 
 export async function savePhoto(event) {
     const { files } = await parser.parse(event);
 
-    const results = await Promise.all(files.map(file => limit(() => saveFiles(file))));
+    const results = await Promise.all(
+        files.map((file) => limit(() => saveFiles(file)))
+    );
 
     return {
         statusCode: 200,
