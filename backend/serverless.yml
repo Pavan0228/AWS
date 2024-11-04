@@ -3,14 +3,16 @@ service: photo-upload-serverless
 provider:
   name: aws
   runtime: nodejs20.x
+  environment:
+    BUCKET_NAME: ${self:service}-public-photos-${sls:stage}
 
 functions:
   hello:
-    handler: handler.hello
+    handler: handler.savePhoto
     events:
       - httpApi:
           path: /
-          method: get
+          method: post
 
 iam:
     role:
