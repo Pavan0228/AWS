@@ -1,31 +1,48 @@
 import AWS from "aws-sdk";
 import parser from "lambda-multipart-parser";
+import sharp from "sharp";
+import pLimit from "p-limit";
 
 const s3 = new AWS.S3();
+const rekognition = new AWS.Rekognition();
+const limit = pLimit(3); 
 
 const saveFiles = async (file) => {
-    const params = {
+
+    const resizedImage = await sharp(file.content)
+        .resize({ width: 800 }) 
+        .toBuffer();
+
+    const s3Params = {
         Bucket: process.env.BUCKET_NAME,
         Key: file.filename,
-        Body: file.content,
+        Body: resizedImage,
         ContentType: file.contentType,
     };
 
-    const saveFile = await s3.putObject(params).promise();
+    const uploadPromise = s3.putObject(s3Params).promise();
+    const labelsPromise = rekognition.detectLabels({
+        Image: { Bytes: resizedImage }
+    }).promise();
 
-    return saveFile;
+    const [saveFile, labels] = await Promise.all([uploadPromise, labelsPromise]);
+
+    console.log(saveFile, "saveFile");
+    console.log(labels, "labels");
+
+    return { saveFile, labels };
 };
 
 export async function savePhoto(event) {
     const { files } = await parser.parse(event);
 
-    files.forEach(saveFiles);
+    const results = await Promise.all(files.map(file => limit(() => saveFiles(file))));
 
     return {
         statusCode: 200,
         body: JSON.stringify({
-            message: "Go Serverless v4! Your function executed successfully!",
-            input: await parser.parse(event),
+            message: "Files uploaded successfully",
+            results,
         }),
     };
 }

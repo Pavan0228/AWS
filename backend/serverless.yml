@@ -5,22 +5,28 @@ provider:
   runtime: nodejs20.x
   environment:
     BUCKET_NAME: ${self:service}-public-photos-${sls:stage}
-
-functions:
-  hello:
-    handler: handler.savePhoto
-    events:
-      - httpApi:
-          path: /
-          method: post
-
-iam:
+  iam:
     role:
       statements:
         - Effect: Allow
           Action:
-          - "s3:*"
-          Resource: "arn:aws:s3:::${self:service}-public-photos-${sls:stage}" 
+            - "s3:PutObject"
+            - "s3:GetObject"
+          Resource: "arn:aws:s3:::${self:service}-public-photos-${sls:stage}/*"  # Specific permissions for the bucket's objects
+        - Effect: Allow
+          Action:
+            - rekognition:DetectLabels
+          Resource: "*"
+
+functions:
+  hello:
+    handler: handler.savePhoto
+    timeout: 30  # Adjust based on your requirements
+    memorySize: 512  # Adjust based on your file processing needs
+    events:
+      - httpApi:
+          path: /
+          method: post
 
 resources:
   Resources:
@@ -43,7 +49,7 @@ resources:
           Statement: 
             - Effect: Allow
               Action: 
-                - "s3:GetObject"  # Restricted to read-only access
+                - "s3:GetObject"
               Resource: 
                 - !Join ['/', [!GetAtt PhotoBucket.Arn, '*']]
               Principal: "*"
