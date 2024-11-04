@@ -21,7 +21,7 @@ provider:
 functions:
   hello:
     handler: handler.savePhoto
-    timeout: 30  # Adjust based on your requirements
+    timeout: 15  # Adjust based on your requirements
     memorySize: 512  # Adjust based on your file processing needs
     events:
       - httpApi:
