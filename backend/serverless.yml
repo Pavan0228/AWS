@@ -1,9 +1,4 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
-org: pavan0208
-# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
-app: backend
-# "service" is the name of this project. This will also be added to your AWS resource names.
-service: photo-upload-service
+service: photo-upload-serverless
 
 provider:
   name: aws
@@ -17,13 +12,17 @@ functions:
           path: /
           method: get
 
-
 resources:
   Resources:
     PhotoBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:service}-public-photos-${sls:stage} # Parameterized bucket name
+        BucketName: ${self:service}-public-photos-${sls:stage}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
 
     PhotoBucketAllowPublicReadPolicy:
       Type: AWS::S3::BucketPolicy
@@ -34,9 +33,9 @@ resources:
           Statement: 
             - Effect: Allow
               Action: 
-                - "s3:*" # All S3 actions (read and write)
+                - "s3:GetObject"  # Restricted to read-only access
               Resource: 
-                - !Join ['/', [!GetAtt PhotoBucket.Arn, '*']] # Bucket ARN with wildcard
+                - !Join ['/', [!GetAtt PhotoBucket.Arn, '*']]
               Principal: "*"
 
   Outputs:
@@ -45,7 +44,5 @@ resources:
       Export:
         Name: PhotoBucketName
 
-
 plugins:
   - serverless-offline
-
