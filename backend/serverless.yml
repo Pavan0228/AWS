@@ -12,6 +12,14 @@ functions:
           path: /
           method: get
 
+iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+          - "s3:*"
+          Resource: "arn:aws:s3:::${self:service}-public-photos-${sls:stage}" 
+
 resources:
   Resources:
     PhotoBucket:
