@@ -5,6 +5,7 @@ provider:
   runtime: nodejs20.x
   environment:
     BUCKET_NAME: ${self:service}-public-photos-${sls:stage}
+    PHOTO_TABLE: ${self:service}-user-table-${sls:stage}
   iam:
     role:
       statements:
@@ -17,6 +18,15 @@ provider:
           Action:
             - rekognition:DetectLabels
           Resource: "*"
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Scan*
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:::table/${self:service}-user-table-${sls:stage}"
 
 functions:
   hello:
@@ -30,6 +40,22 @@ functions:
 
 resources:
   Resources:
+
+    PhotoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-user-table-${sls:stage}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+
     PhotoBucket:
       Type: AWS::S3::Bucket
       Properties:
