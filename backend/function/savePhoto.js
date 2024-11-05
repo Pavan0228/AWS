@@ -2,9 +2,11 @@ import AWS from "aws-sdk";
 import parser from "lambda-multipart-parser";
 import sharp from "sharp";
 import pLimit from "p-limit";
+import {v4 as uuidv4} from 'uuid';
 
 const s3 = new AWS.S3();
 const rekognition = new AWS.Rekognition();
+const dynamoDB = new AWS.DynamoDB.DocumentClient()
 const limit = pLimit(3);
 
 const saveFiles = async (file) => {
@@ -31,9 +33,23 @@ const saveFiles = async (file) => {
         labelsPromise,
     ]);
 
+    const labels =  Labels.map((label) => label.Name);
+
+    const primary_key = uuidv4();
+
+    await dynamoDB.put({
+        TableName: process.env.PHOTO_TABLE,
+        Item: {
+            primary_key,
+            name: file.filename,
+            labels
+        }
+    }).promise();
+
     return {
+        primary_key,
         saveFile: `https://${process.env.BUCKET_NAME}.s3.amazonaws.com/${file.filename}`,
-        labels: Labels.map((label) => label.Name),
+        labels
     };
 };
 

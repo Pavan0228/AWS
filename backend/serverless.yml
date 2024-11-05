@@ -5,7 +5,7 @@ provider:
   runtime: nodejs20.x
   environment:
     BUCKET_NAME: ${self:service}-public-photos-${sls:stage}
-    PHOTO_TABLE: ${self:service}-user-table-${sls:stage}
+    PHOTO_TABLE: ${self:service}-photo-table-${sls:stage}
   iam:
     role:
       statements:
@@ -26,11 +26,11 @@ provider:
             - dynamodb:Query
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:::table/${self:service}-user-table-${sls:stage}"
+          Resource: "arn:aws:dynamodb:::table/${self:service}-photo-table-${sls:stage}"
 
 functions:
   hello:
-    handler: handler.savePhoto
+    handler: function/savePhoto.savePhoto
     timeout: 15  # Adjust based on your requirements
     memorySize: 512  # Adjust based on your file processing needs
     events:
@@ -44,12 +44,12 @@ resources:
     PhotoTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-user-table-${sls:stage}
+        TableName: ${self:service}-photo-table-${sls:stage}
         AttributeDefinitions:
-          - AttributeName: email
+          - AttributeName: primary_key
             AttributeType: S
         KeySchema:
-          - AttributeName: email
+          - AttributeName: primary_key
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
