@@ -41,7 +41,7 @@ const saveFiles = async (file) => {
         TableName: process.env.PHOTO_TABLE,
         Item: {
             primary_key,
-            name: file.filename,
+            name: `https://${process.env.BUCKET_NAME}.s3.amazonaws.com/${file.filename}`,
             labels
         }
     }).promise();

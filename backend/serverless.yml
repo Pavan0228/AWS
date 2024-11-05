@@ -29,7 +29,7 @@ provider:
           Resource: "arn:aws:dynamodb:::table/${self:service}-photo-table-${sls:stage}"
 
 functions:
-  hello:
+  savePhoto:
     handler: function/savePhoto.savePhoto
     timeout: 15  # Adjust based on your requirements
     memorySize: 512  # Adjust based on your file processing needs
@@ -37,6 +37,13 @@ functions:
       - httpApi:
           path: /
           method: post
+  
+  getPhotoData:
+    handler: function/getPhotoData.getPhotoData
+    events:
+      - httpApi:
+          path: /
+          method: get
 
 resources:
   Resources:
