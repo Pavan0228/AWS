@@ -45,6 +45,13 @@ functions:
           path: /
           method: get
 
+  celebrityRecognition:
+    handler: function/celebrityRecognition.celebrityRecognition
+    events:
+      - httpApi:
+          path: /celebrityRecognition
+          method: post
+
 resources:
   Resources:
 
