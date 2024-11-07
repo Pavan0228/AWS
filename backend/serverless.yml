@@ -26,7 +26,7 @@ provider:
             - dynamodb:Query
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:::table/${self:service}-photo-table-${sls:stage}"
+          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-photo-table-${sls:stage}"
 
 functions:
   savePhoto:
