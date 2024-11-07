@@ -38,7 +38,11 @@ export async function celebrityRecognition(event) {
             MatchConfidence: face.MatchConfidence,
             KnownGender: face.KnownGender
         })),
-        UnrecognizedFaces: result.UnrecognizedFaces
+        UnrecognizedFaces: result.UnrecognizedFaces?.map((face) => ({
+            Emotions: face.Emotions
+                .sort((a, b) => b.Confidence - a.Confidence)
+                .slice(0, 3),
+        }))
     }));
     
     return {

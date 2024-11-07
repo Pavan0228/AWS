@@ -18,9 +18,16 @@ interface CelebrityFace {
     Urls: string[];
 }
 
+interface UnrecognizedFaces{
+    Emotions?: Array<{
+        Type: string;
+        Confidence: number;
+    }>;
+}
+
 interface ApiResponse {
     CelebrityFaces: CelebrityFace[];
-    UnrecognizedFaces: any[];
+    UnrecognizedFaces: UnrecognizedFaces[];
     errorType? : String;
 }
 
@@ -231,6 +238,41 @@ const CelebrityRecognition: React.FC = () => {
                                                         );
                                                     })}
                                                 </ul>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ))}
+
+            {results && results?.map((result, resultIndex) => (
+                <div key={resultIndex} className="space-y-4">
+                    {result?.UnrecognizedFaces?.map((celebrity, index) => (
+                        <div key={`${resultIndex}-${index}`} className="bg-white rounded-lg shadow-md">
+                            <div className="p-6">
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    {celebrity.Emotions && celebrity.Emotions.length > 0 && (
+                                        <div className="bg-gray-50 p-4 rounded-lg">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Smile className="h-5 w-5 text-blue-600" />
+                                                <h4 className="font-semibold text-gray-700">Emotional Analysis</h4>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {celebrity.Emotions.map((emotion, idx) => {
+                                                    return( 
+                                                        <div key={idx} className="flex justify-between items-center">
+                                                        <span className="font-medium text-gray-600">
+                                                            {emotion.Type}
+                                                        </span>
+                                                        <span className={getConfidenceColor(emotion.Confidence)}>
+                                                            {emotion.Confidence.toFixed(1)}%
+                                                        </span>
+                                                    </div>
+                                                    )
+                                                })}
                                             </div>
                                         </div>
                                     )}
