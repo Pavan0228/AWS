@@ -66,16 +66,16 @@ const CelebrityRecognition: React.FC = () => {
                 body: formData,
             });
             const data: ApiResponse[] = await response.json();
-            console.log(data);
 
             if (data.some(item => item.errorType)) {
-                setError("An error occurred during celebrity recognition");
+                const errorItem = data.find(item => item.errorType) as { errorMessage?: string };
+                setError(errorItem?.errorMessage || "An error occurred during celebrity recognition");
                 setResults(null);
                 return;
-            }
+            }            
             setResults(data);
         } catch (err) {
-            setError("Network error. Failed to connect to the server. Please try again later.");
+            setError("Request has invalid image format");
             console.error(err);
         } finally {
             setLoading(false);
