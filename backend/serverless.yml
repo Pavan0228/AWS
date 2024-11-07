@@ -31,8 +31,8 @@ provider:
 functions:
   savePhoto:
     handler: function/savePhoto.savePhoto
-    timeout: 15  # Adjust based on your requirements
-    memorySize: 512  # Adjust based on your file processing needs
+    timeout: 20  
+    memorySize: 512  
     events:
       - httpApi:
           path: /
@@ -47,6 +47,8 @@ functions:
 
   celebrityRecognition:
     handler: function/celebrityRecognition.celebrityRecognition
+    timeout: 20  
+    memorySize: 512  
     events:
       - httpApi:
           path: /celebrityRecognition

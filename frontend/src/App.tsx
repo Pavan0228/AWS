@@ -1,3 +1,4 @@
+import CelebrityRecognition from "./components/CelebrityRecognition";
 import ImagesList from "./components/ImagesList";
 import PhotoUploader from "./components/PhotoUploader";
 
@@ -6,6 +7,7 @@ function App() {
         <div>
             <PhotoUploader />
             <ImagesList />
+            <CelebrityRecognition />
         </div>
     );
 }

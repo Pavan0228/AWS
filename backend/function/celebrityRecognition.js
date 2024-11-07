@@ -17,14 +17,32 @@ const UploadImg = async (file) => {
 
 
 export async function celebrityRecognition(event) {
-
     const { files } = await parser.parse(event);
 
     const results = await Promise.all(
-        files.map((file) =>UploadImg(file))
+        files.map((file) => UploadImg(file))
     );
-        return {
-            statusCode: 200,
-            body: JSON.stringify(results),
-        };
+
+    const filteredResults = results.map(result => ({
+        CelebrityFaces: result.CelebrityFaces.map(face => ({
+            Urls: face.Urls,
+            Name: face.Name,
+            Id: face.Id,
+            Face: {
+                BoundingBox: face.Face.BoundingBox,
+                Confidence: face.Face.Confidence,
+                Emotions: face.Face.Emotions
+                    .sort((a, b) => b.Confidence - a.Confidence)
+                    .slice(0, 3) 
+            },
+            MatchConfidence: face.MatchConfidence,
+            KnownGender: face.KnownGender
+        })),
+        UnrecognizedFaces: result.UnrecognizedFaces
+    }));
+    
+    return {
+        statusCode: 200,
+        body: JSON.stringify(filteredResults)
+    };
 }
