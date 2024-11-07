@@ -21,6 +21,7 @@ interface CelebrityFace {
 interface ApiResponse {
     CelebrityFaces: CelebrityFace[];
     UnrecognizedFaces: any[];
+    errorType? : String;
 }
 
 const CelebrityRecognition: React.FC = () => {
@@ -45,29 +46,35 @@ const CelebrityRecognition: React.FC = () => {
             setError("Please select an image first");
             return;
         }
-
+    
         setLoading(true);
         setError(null);
-
+    
         const formData = new FormData();
         formData.append("image", selectedImage);
-
+    
         try {
             const response = await fetch("http://localhost:3000/celebrityRecognition", {
                 method: "POST",
                 body: formData,
             });
-
             const data: ApiResponse[] = await response.json();
             console.log(data);
+
+            if (data.some(item => item.errorType)) {
+                setError("An error occurred during celebrity recognition");
+                setResults(null);
+                return;
+            }
             setResults(data);
         } catch (err) {
-            setError("Failed to process image. Please try again.");
+            setError("Network error. Failed to connect to the server. Please try again later.");
             console.error(err);
         } finally {
             setLoading(false);
         }
     };
+    
 
     const getConfidenceColor = (confidence: number) => {
         if (confidence >= 90) return "text-green-600";
@@ -136,9 +143,9 @@ const CelebrityRecognition: React.FC = () => {
             </div>
 
             {/* Results Section */}
-            {results?.map((result, resultIndex) => (
+            {results && results?.map((result, resultIndex) => (
                 <div key={resultIndex} className="space-y-4">
-                    {result.CelebrityFaces.map((celebrity, index) => (
+                    {result?.CelebrityFaces?.map((celebrity, index) => (
                         <div key={`${resultIndex}-${index}`} className="bg-white rounded-lg shadow-md">
                             <div className="p-6">
                                 <div className="flex flex-col md:flex-row gap-6">
@@ -234,8 +241,8 @@ const CelebrityRecognition: React.FC = () => {
                 </div>
             ))}
 
-            {results?.map((result, index) => 
-                result.CelebrityFaces.length === 0 && (
+            {results && results?.map((result, index) => 
+                result?.CelebrityFaces?.length === 0 && (
                     <div 
                         key={index} 
                         className="flex items-center justify-center p-4 m-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50"
