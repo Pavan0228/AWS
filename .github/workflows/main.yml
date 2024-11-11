@@ -3,32 +3,35 @@ name: Upload Website
 on:
   push:
     branches:
-      - main  # Ensure your branch is named 'main' (not 'master' or other names)
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Install project dependencies
+      # Change to the correct directory (e.g., 'frontend')
+      - name: Set up frontend directory
+        working-directory: ./frontend # Adjust this if your package.json is in a different directory
+        run: pwd
+
       - name: Install dependencies
+        working-directory: ./frontend # Ensure the working directory points to where package.json is located
         run: npm install
 
-      # Step 3: Build the project for production
       - name: Build project
+        working-directory: ./frontend # Ensure the working directory points to where package.json is located
         run: npm run build
 
-      # Step 4: Sync build files to S3 bucket
       - name: Deploy to S3
         uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}         # Set in GitHub repo secrets
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Set in GitHub repo secrets
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # Set in GitHub repo secrets
-          AWS_REGION: 'ap-south-1'                            # AWS region for the S3 bucket
-          SOURCE_DIR: 'dist'                                  # Ensure 'dist' is the correct output folder
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'ap-south-1'
+          SOURCE_DIR: './frontend/dist' # Update this path if your build output is different
