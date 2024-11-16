@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.1691.0",
+    "express": "^4.21.1",
     "lambda-multipart-parser": "^1.0.1",
     "p-limit": "^6.1.0",
     "serverless-offline": "^14.3.3",
